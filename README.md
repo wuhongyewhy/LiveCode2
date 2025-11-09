@@ -1,6 +1,6 @@
-## LiveCode
+## LiveCode2
 
-LiveCode evaluates your python code while you type and displays variable values for each line.
+LiveCode2 evaluates your python code while you type and displays variable values for each line.
 
 ![demo gif](https://raw.githubusercontent.com/Xirider/LiveCode/master/livecode_example.gif)
 
