@@ -1,3 +1,9 @@
+    // "onCommand:livecode2.currentSession",
+
+    // "onCommand:livecode2.newSession",
+
+    // "onCommand:livecode2.newSessionOnHighlightedCode"
+
 ## livecode2 for python
 
 livecode2 for python evaluates your python code while you type and displays trace output for each line using space_tracer.
@@ -15,15 +21,9 @@ Open a python file and click on the icon in the top bar to the right to open liv
 ## Features
 
 * Real-time evaluation: You don't need to run your python file, just keep typing
-
 * Variable display: Whenever a variable is declared or changed, its new value is displayed in the same line
-
 * Loop display: For each iteration of a loop all intermediate values are displayed
-
 * Error display: The instant you make a mistake an error with stack trace is shown.
-
-
-
 
 ### #$save
 
@@ -55,7 +55,6 @@ print(x) # this number will not change when editing below the #$save line
 
 Please note that #$save does not work with certain types, like generators.
 
-
 ### #$end
 
 Use the `#$end` comment to indicate the end of the real-time code. Code after `#$end` will not be executed in real-time.
@@ -80,7 +79,6 @@ upload_results_to_s3(x)
 ```
 
 You can also use control-enter to run a block of code outside `#$end`.
-
 
 ## Credits
 

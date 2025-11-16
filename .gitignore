@@ -126,3 +126,5 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+vsce-1.10.0.tgz
+vsce-1.30.0.tgz

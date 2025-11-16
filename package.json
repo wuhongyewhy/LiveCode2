@@ -1,9 +1,9 @@
 {
   "name": "livecode2",
   "displayName": "livecode2 for python",
-  "description": "Real-time python variable evaluation (space_tracer driven)",
+  "description": "Real-time python evaluation (space_tracer driven)",
   "version": "1.4.0",
-  "publisher": "xirider",
+  "publisher": "wuhy",
   "engines": {
     "vscode": "^1.31.0"
   },
