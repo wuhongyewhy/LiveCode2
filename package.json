@@ -1,6 +1,6 @@
 {
-  "name": "livecode2",
-  "displayName": "livecode2 for python",
+  "name": "live-coding",
+  "displayName": "live coding for python",
   "description": "Real-time python evaluation (space_tracer driven)",
   "version": "2.1.0",
   "publisher": "wuhy",
