@@ -3,7 +3,7 @@
 
 ### Overview
 
-Livecode2 for Python brings live coding to VS Code through `space_tracer`. It evaluates the current buffer whenever you type, visualize state changes, and shows errors immediately.  
+Live Coding for Python brings live coding to VS Code through `space_tracer`. It evaluates the current buffer whenever you type, visualize state changes, and shows errors immediately.  
 ![demo](https://raw.githubusercontent.com/wuhongyewhy/LiveCode/master/livecode_example.png)
 
 ### Features
@@ -31,11 +31,11 @@ Livecode2 for Python brings live coding to VS Code through `space_tracer`. It ev
 
 1. Install Python and `space-tracer`.
 2. Install the extension from VSIX or Marketplace.
-3. Open any `.py` file, run the `Livecode2` command, and tweak settings to suit your workflow.
+3. Open any `.py` file, run the Live Coding command (Command Palette), and tweak settings to suit your workflow.
 
 ### Credits
 
-- **Livecode for Python**: the original VS Code extension that Livecode2 forked from.
+- **Livecode for Python**: the original VS Code extension that Live Coding forked from.
 - **wolf project**: inspired our ideas on creating a smooth live-coding experience.
 - **PyCharm Live Coding for Python**: provided UX patterns and workflow inspiration.
 - Plus every upstream dependency—`space_tracer`, `python-shell`, the VS Code team, and the community contributors.
@@ -48,7 +48,7 @@ Livecode2 for Python brings live coding to VS Code through `space_tracer`. It ev
 
 ## 简介 / Introduction
 
-**livecode2 for Python** 是一个 VS Code 扩展，基于 `space_tracer` 实现“所写即所见”的 Python 运行体验。你只需在编辑器中输入代码，Livecode2 就会自动触发 `space_tracer`，把每一行、每一次循环迭代的值变化、异常信息实时渲染在面板中，帮助你快速理解程序行为。
+**Live Coding for Python** 是一个 VS Code 扩展，基于 `space_tracer` 实现“所写即所见”的 Python 运行体验。你只需在编辑器中输入代码，Live Coding 就会自动触发 `space_tracer`，把每一行、每一次循环迭代的值变化、异常信息实时渲染在面板中，帮助你快速理解程序行为。
 
 ![demo](https://raw.githubusercontent.com/wuhongyewhy/LiveCode/master/livecode_example.png)
 
@@ -67,7 +67,7 @@ Livecode2 for Python brings live coding to VS Code through `space_tracer`. It ev
 
 - **最低版本 / Minimum**：Python 3.8。
 
-Livecode2 会按照以下顺序自动寻找可用的 Python 解释器：
+Live Coding 会按照以下顺序自动寻找可用的 Python 解释器：
 
 1. 当前激活环境：`PYTHON_EXECUTABLE`、`VIRTUAL_ENV`、`CONDA_PREFIX`、VS Code Python 扩展的 `python.defaultInterpreterPath` 等。
 2. 扩展目录自带的 `python/` 文件夹，或者 `livecode2.pythonPath` 设置中显式指定的路径（支持 `${workspaceFolder}` 宏）。
@@ -93,8 +93,8 @@ Livecode2 会按照以下顺序自动寻找可用的 Python 解释器：
 ## 快速开始 / Getting Started
 
 1. 安装 Python ≥3.5，并通过 `pip install space-tracer` 获取依赖。
-2. 在 VS Code 中安装 livecode2（Marketplace 或 VSIX）。
-3. 打开 `.py` 文件 → 运行命令 “Livecode2: eval python in real time” 或使用快捷键：
+2. 在 VS Code 中安装 Live Coding（Marketplace 或 VSIX）。
+3. 打开 `.py` 文件 → 运行命令 “Live Coding: eval python in real time” 或使用快捷键：
    - Windows/Linux：`Ctrl+Shift+A`（当前文档）、`Ctrl+Shift+Q`（新会话）
    - macOS：`Cmd+Shift+A`、`Cmd+Shift+R`
 4. 根据需要调整 `afterDelay`、`onSave` 等触发方式，或修改 `livecode2.pythonPath`。
