@@ -32,6 +32,9 @@ export default class PreviewManager {
     pythonEditor: vscode.TextEditor;
     private traceProcess: ChildProcess | null = null
     private changeTimer: NodeJS.Timeout | null = null
+    private spaceTracerChecked = false
+    private spaceTracerAvailable = false
+    private installingSpaceTracer = false
 
     /**
      * assumes a text editor is already open - if not will error out
@@ -92,6 +95,12 @@ export default class PreviewManager {
         let panel = this.previewContainer.start(basename(this.pythonEditorDoc.fileName));
         panel.onDidDispose(()=>this.dispose(), this, this.subscriptions)
         this.subscriptions.push(panel)
+
+        panel.webview.onDidReceiveMessage(async (msg) => {
+            if(msg?.command === "install-space-tracer"){
+                await this.installSpaceTracer();
+            }
+        }, undefined, this.subscriptions)
 
         // only space_tracer is used now – no AREPL backend startup
 
@@ -174,7 +183,7 @@ export default class PreviewManager {
 
     runlivecode(){
         if(this.pythonEditorDoc){
-            this.runSpaceTracerForDoc(this.pythonEditorDoc)
+            void this.runSpaceTracerForDoc(this.pythonEditorDoc)
         }
     }
 
@@ -196,7 +205,7 @@ export default class PreviewManager {
 
     runlivecodeBlock() {
         if(this.pythonEditorDoc){
-            this.runSpaceTracerForDoc(this.pythonEditorDoc)
+            void this.runSpaceTracerForDoc(this.pythonEditorDoc)
         }
     }
 
@@ -240,12 +249,89 @@ export default class PreviewManager {
         })
     }
 
+    private ensureSpaceTracerAvailable(pythonPath: string): Promise<boolean> {
+        if(this.spaceTracerChecked && this.spaceTracerAvailable) return Promise.resolve(true)
+        if(this.installingSpaceTracer) return Promise.resolve(false)
+
+        return new Promise<boolean>((resolve) => {
+            const checkProc = spawn(pythonPath, ["-c", "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('space_tracer') else 1)"], {
+                env: process.env,
+                stdio: "ignore"
+            })
+
+            checkProc.on("close", (code) => {
+                this.spaceTracerChecked = true
+                this.spaceTracerAvailable = code === 0
+                if(!this.spaceTracerAvailable){
+                    this.previewContainer.pythonPanelPreview.showSpaceTracerInstallPrompt(
+                        `未检测到 space_tracer。点击下方按钮使用当前 Python (${pythonPath}) 安装。`
+                    )
+                }
+                resolve(this.spaceTracerAvailable)
+            })
+
+            checkProc.on("error", () => {
+                this.spaceTracerChecked = true
+                this.spaceTracerAvailable = false
+                this.previewContainer.pythonPanelPreview.showSpaceTracerInstallPrompt(
+                    `无法检测 space_tracer（无法运行 ${pythonPath}）。请确认 Python 路径有效。`
+                )
+                resolve(false)
+            })
+        })
+    }
+
+    private async installSpaceTracer(){
+        if(this.installingSpaceTracer) return
+        const pythonPath = livecode2Utils.getPythonPath()
+        this.installingSpaceTracer = true
+        this.runningStatus.text = "Installing space_tracer..."
+        this.runningStatus.show()
+        this.previewContainer.showTrace("正在安装 space_tracer ...")
+
+        await new Promise<void>((resolve) => {
+            const proc = spawn(pythonPath, ["-m", "pip", "install", "space_tracer"], {
+                env: process.env,
+                stdio: ["ignore", "pipe", "pipe"]
+            })
+
+            let stdout = ""
+            let stderr = ""
+
+            proc.stdout?.on("data", data => stdout += data.toString())
+            proc.stderr?.on("data", data => stderr += data.toString())
+
+            proc.on("close", async (code) => {
+                this.installingSpaceTracer = false
+                this.runningStatus.hide()
+                if(code === 0){
+                    this.spaceTracerChecked = true
+                    this.spaceTracerAvailable = true
+                    this.previewContainer.showTrace("space_tracer 安装完成，正在重新运行…")
+                    if(this.pythonEditorDoc){
+                        await this.runSpaceTracerForDoc(this.pythonEditorDoc)
+                    }
+                } else {
+                    const msg = [stdout, stderr].filter(Boolean).join("\n").trim() || `pip 退出码 ${code}`
+                    this.previewContainer.showTrace(`space_tracer 安装失败：\n${msg}`)
+                }
+                resolve()
+            })
+
+            proc.on("error", err => {
+                this.installingSpaceTracer = false
+                this.runningStatus.hide()
+                this.previewContainer.showTrace(`启动 pip 失败：${err instanceof Error ? err.message : String(err)}`)
+                resolve()
+            })
+        })
+    }
+
     /**
      * run space_tracer on current code and show its textual output
      */
-    private runSpaceTracer(code: string, filePath: string){
+    private runSpaceTracer(pythonPath: string, code: string, filePath: string){
         const workspaceFolder = vscodeUtils.getCurrentWorkspaceFolder(false) || undefined
-        const pythonPath = livecode2Utils.getPythonPath()
 
         // cancel previous trace process
         if(this.traceProcess){
@@ -320,14 +406,14 @@ export default class PreviewManager {
 
         if(settings().get<boolean>("skipLandingPage")){
             if(this.pythonEditorDoc){
-                this.runSpaceTracerForDoc(this.pythonEditorDoc)
+                void this.runSpaceTracerForDoc(this.pythonEditorDoc)
             }
         }
 
         
         vscode.workspace.onDidSaveTextDocument((e) => {
             if(settings().get<string>("whenToExecute") == "onSave"){
-                this.runSpaceTracerForDoc(e)
+                void this.runSpaceTracerForDoc(e)
             }
         }, this, this.subscriptions)
         
@@ -339,7 +425,7 @@ export default class PreviewManager {
                     clearTimeout(this.changeTimer)
                 }
                 this.changeTimer = setTimeout(() => {
-                    this.runSpaceTracerForDoc(e.document)
+                    void this.runSpaceTracerForDoc(e.document)
                 }, delay)
             }
         }, this, this.subscriptions)
@@ -428,7 +514,7 @@ Currently live-coding.unsafeKeywords is set to ["${unsafeKeywords.join('", "')}"
             }
         }        
     }
-    private runSpaceTracerForDoc(doc: vscode.TextDocument){
+    private async runSpaceTracerForDoc(doc: vscode.TextDocument){
         if(!this.pythonEditorDoc || doc !== this.pythonEditorDoc) return
 
         const text = doc.getText()
@@ -446,6 +532,12 @@ Currently live-coding.unsafeKeywords is set to ["${unsafeKeywords.join('", "')}"
         this.previewContainer.pythonPanelPreview.startrange = curline;
         this.runningStatus.text = "Running space_tracer..."
         this.runningStatus.show();
-        this.runSpaceTracer(text, filePath)
+        const pythonPath = livecode2Utils.getPythonPath()
+        const hasSpaceTracer = await this.ensureSpaceTracerAvailable(pythonPath)
+        if(!hasSpaceTracer){
+            this.runningStatus.hide()
+            return
+        }
+        this.runSpaceTracer(pythonPath, text, filePath)
     }
 }

@@ -212,6 +212,37 @@ if r.status_code == 200:
         this.throttledUpdate()
     }
 
+    /**
+     * Show a missing dependency prompt with an install button that posts back to the extension host.
+     * The caller must register a webview message handler for command 'install-space-tracer'.
+     */
+    public showSpaceTracerInstallPrompt(message: string){
+        // refresh CSP + assets with a new nonce so the inline script is allowed
+        this.scriptNonce = this.generateNonce()
+        this.refreshStaticAssets()
+
+        const safeMsg = Utilities.escapeHtml(message)
+        this.varsPlainText = `
+            <div class="install-missing">
+                <p>${safeMsg}</p>
+                <button id="install-space-tracer" style="margin-top:8px;padding:6px 12px;">安装 space_tracer</button>
+                <script nonce="${this.scriptNonce}">
+                    const vscodeApi = acquireVsCodeApi();
+                    const btn = document.getElementById("install-space-tracer");
+                    if(btn){
+                        btn.addEventListener("click", ()=>{
+                            vscodeApi.postMessage({ command: "install-space-tracer" });
+                        });
+                    }
+                </script>
+            </div>
+        `;
+        this.printContainer = this.emptyPrint
+        this.errorContainer = ""
+        this.timeContainer = ""
+        this.throttledUpdate()
+    }
+
     clearPrint(){
         this.printContainer = this.emptyPrint
     }

@@ -2,7 +2,7 @@
   "name": "live-coding",
   "displayName": "live coding for python",
   "description": "Real-time python evaluation (space_tracer driven)",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "publisher": "wuhy",
   "engines": {
     "vscode": ">=1.105.0",
@@ -317,20 +317,23 @@
     "semver": "^7.7.3"
   },
   "bugs": {
-    "url": "https://github.com/xirider/livecode/issues",
+    "url": "https://github.com/wuhongyewhy/LiveCoding/issues",
     "email": ""
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/xirider/livecode.git"
+    "url": "https://github.com/wuhongyewhy/LiveCoding.git"
   },
   "license": "MIT",
   "keywords": [
     "python",
+    "livecode",
+    "live-coding",
+    "beginner",
+    "education",
     "real-time",
     "display",
-    "variable",
-    "explorer"
+    "variable"
   ],
   "icon": "media/livecode-store.png",
   "volta": {
