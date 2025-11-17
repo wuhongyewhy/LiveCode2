@@ -4,8 +4,6 @@ import * as vscode from "vscode"
 import { EnvironmentVariablesProvider } from "./env/variables/environmentVariablesProvider"
 import { EnvironmentVariablesService } from "./env/variables/environment"
 import { join, basename, dirname } from "path";
-import * as fs from "fs"
-import * as os from "os"
 import { spawn, ChildProcess } from "child_process"
 import { PreviewContainer } from "./previewContainer"
 import Reporter from "./telemetry"
@@ -249,19 +247,6 @@ export default class PreviewManager {
         const workspaceFolder = vscodeUtils.getCurrentWorkspaceFolder(false) || undefined
         const pythonPath = livecode2Utils.getPythonPath()
 
-        // write code to temp file
-        const baseName = basename(filePath || "untitled.py")
-        const safeBase = baseName.replace(/[^\w\.]+/g, "_")
-        const tempFile = join(os.tmpdir(), `livecode2_${safeBase}`)
-
-        try {
-            fs.writeFileSync(tempFile, code, { encoding: "utf8" })
-        } catch (err) {
-            const msg = err instanceof Error ? err.message : String(err)
-            this.previewContainer.showTrace(`写入临时文件失败: ${msg}`)
-            return
-        }
-
         // cancel previous trace process
         if(this.traceProcess){
             try {
@@ -270,12 +255,20 @@ export default class PreviewManager {
             this.traceProcess = null
         }
 
-        const args = ["-m", "space_tracer", tempFile]
+        const tracedFile = filePath || join(workspaceFolder || "", "untitled.py")
+        const args = ["-m", "space_tracer", "--traced_file", tracedFile]
+        const cwd = workspaceFolder || (filePath ? dirname(filePath) : undefined)
         const proc = spawn(pythonPath, args, {
-            cwd: workspaceFolder ? workspaceFolder : dirname(tempFile),
-            env: process.env
+            cwd,
+            env: process.env,
+            stdio: ["pipe", "pipe", "pipe"]
         })
         this.traceProcess = proc
+
+        if(proc.stdin){
+            proc.stdin.write(code)
+            proc.stdin.end()
+        }
 
         let stdout = ""
         let stderr = ""

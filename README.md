@@ -1,8 +1,3 @@
-    // "onCommand:livecode2.currentSession",
-
-    // "onCommand:livecode2.newSession",
-
-    // "onCommand:livecode2.newSessionOnHighlightedCode"
 
 ## livecode2 for python
 
