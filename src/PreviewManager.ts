@@ -346,8 +346,18 @@ export default class PreviewManager {
 
         // 通过内联脚本调用 TraceRunner.trace_code，并在脚本内部把 MockTurtle 的
         // monkey_patch/remove_monkey_patch 替换为 no-op，彻底关闭画图逻辑。
+        // 同时强制重置 stdin/stdout/stderr 为 utf-8 编码，避免 Windows 默认 GBK 导致乱码
         const driver = [
             "import sys",
+            "import io",
+            "try:",
+            "    # 强制重置标准流为 utf-8",
+            "    sys.stdin = io.TextIOWrapper(sys.stdin.buffer, encoding='utf-8')",
+            "    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')",
+            "    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')",
+            "except Exception:",
+            "    pass",
+            "",
             "try:",
             "    from space_tracer.main import TraceRunner",
             "    try:",
@@ -381,7 +391,7 @@ export default class PreviewManager {
 
         const args = ["-u", "-c", driver]
         const cwd = workspaceFolder || (filePath ? dirname(filePath) : undefined)
-        const env = process.env
+        const env = Object.assign({}, process.env, { PYTHONIOENCODING: "utf-8" })
 
         const proc = spawn(pythonPath, args, {
             cwd,

@@ -1,3 +1,8 @@
+
+### 2.1.3
+
+Fixed the issue where the output was empty in some cases.
+
 ### 2.1.2
 
 Add space_tracer installation button
